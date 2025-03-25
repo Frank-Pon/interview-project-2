@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<html lang = 'zh-TW'>
+    <head>
+        <meta charset = 'UTF-8'>
+        <title>股價查詢</title>
+        <style>
+            body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f9f9f9;
+            }
+
+            h2 {
+            color: #333;
+            }
+
+            input, button {
+            padding: 8px 12px;
+            font-size: 16px;
+            margin-right: 8px;
+            }
+
+            button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            }
+
+            button:hover {
+            background-color: #45a049;
+            }
+
+            #result {
+            background-color: #fff;
+            padding: 16px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+            }
+
+            .error {
+            color: red;
+            font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>請輸入股票代號查詢股票資訊</h2>
+        <input type="text" id = codeinput placeholder="請輸入股票代號 ( 例：2330 )">
+        <input type="text" id = priceinpit placeholder="請輸入目標股價 ( 選填 )">
+        <button onclick="search()">查詢</button>
+
+        <div id = 'result'></div>
+
+        <script>
+            async function search() {
+                const code = document.getElementById('codeinput').value.trim();
+                const target = document.getElementById('priceinput').value.trim();
+                const resultDiv = document.getElementById('result');
+                
+                if(!code){
+                    resultDiv.innerHTML = '<span class = "error">請輸入股票代號</span>';
+                    return;
+                }
+
+                resultDiv.innerHTML = '查詢中...';
+                // if(resultDiv.innerHTML == '查詢中'){
+                //     resultDiv.innerHTML = '查詢中.'
+                // }
+                // else if (resultDiv.innerHTML == '查詢中.'){
+                //     resultDiv.innerHTML = '查詢中..'
+                // }
+                // else if (resultDiv.innerHTML == '查詢中..'){
+                //     resultDiv.innerHTML = '查詢中...'
+                // }
+                // else if (resultDiv.innerHTML == '查詢中...'){
+                //     resultDiv.innerHTML = '查詢中'
+                // }
+
+                const response = await fetch(`/stock/${code}?target=${target}`);
+                const data = await response.json();
+
+                // if(data.status){
+                //     resultDiv.textContent = JSON.stringify(data,null,2); 
+                // }
+                if(data.status==='Success'){
+                    resultDiv.innerHTML = `
+                    📈 股票名稱：${data.stock_name} ( ${data.stock_num} )<br>
+                    💵 股價：${data.stock_price} 元${data.currency}<br>
+                    🕘 擷取時間：${data.time}
+                    `;
+                }else{
+                    resultDiv.innerHTML = `<span class = 'error'>查無此股票代號：${code}</span>`
+                }
+            }
+        </script>
+    </body>
+</html>
