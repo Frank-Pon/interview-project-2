@@ -46,54 +46,63 @@
         </style>
     </head>
     <body>
-        <h2>請輸入股票代號查詢股票資訊</h2>
-        <input type="text" id = codeinput placeholder="請輸入股票代號 ( 例：2330 )">
-        <input type="text" id = priceinpit placeholder="請輸入目標股價 ( 選填 )">
-        <button onclick="search()">查詢</button>
+        <h2>請輸入股票代號及目標股價查詢股票資訊  ( 例：2330:990 )</h2>
+        <input type="text" id = 'MultiInput' placeholder="請輸入股票代號及目標股價">
+        <button onclick="Multisearch()">查詢</button>
 
         <div id = 'result'></div>
 
         <script>
-            async function search() {
-                const code = document.getElementById('codeinput').value.trim();
-                const target = document.getElementById('priceinput').value.trim();
+            async function Multisearch() {
+                const row = document.getElementById('MultiInput').value.trim();
                 const resultDiv = document.getElementById('result');
                 
-                if(!code){
-                    resultDiv.innerHTML = '<span class = "error">請輸入股票代號</span>';
+                if(!row){
+                    resultDiv.innerHTML = '<span class = "error">請輸入股票代號及目標股價</span>';
                     return;
                 }
 
                 resultDiv.innerHTML = '查詢中...';
-                // if(resultDiv.innerHTML == '查詢中'){
-                //     resultDiv.innerHTML = '查詢中.'
-                // }
-                // else if (resultDiv.innerHTML == '查詢中.'){
-                //     resultDiv.innerHTML = '查詢中..'
-                // }
-                // else if (resultDiv.innerHTML == '查詢中..'){
-                //     resultDiv.innerHTML = '查詢中...'
-                // }
-                // else if (resultDiv.innerHTML == '查詢中...'){
-                //     resultDiv.innerHTML = '查詢中'
-                // }
 
-                const response = await fetch(`/stock/${code}?target=${target}`);
-                const data = await response.json();
+
+                const data = await row.split(',').map(item => {
+                    const[code,price] = item.trim().split(':');
+                    return {stock_code:code.trim(), target:parseFloat(price.trim())}
+                });
+                const response = await fetch('/multi_check',{
+                    method:"POST",
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+
+                if(Array.isArray(result)){
+                    let html = ''
+                    result.forEach(stock => {
+                        if(stock.status === 'Success'){
+                            html+=`
+                            <div>
+                                📈股票名稱：${stock.stock_name} ( ${stock.stock_num} )<br>
+                                💵當前股價：${stock.stock_price} 元${stock.currency}<br>
+                                🕘擷取時間：${stock.time}
+                            </div>
+                            `;
+                        }else{
+                            html+=`
+                            <div class='error'>❌查無股票代號${stock.stock_num}</div>
+                            `;
+                        }
+                    })
+                resultDiv.innerHTML = html;
 
                 // if(data.status){
                 //     resultDiv.textContent = JSON.stringify(data,null,2); 
-                // }
-                if(data.status==='Success'){
-                    resultDiv.innerHTML = `
-                    📈 股票名稱：${data.stock_name} ( ${data.stock_num} )<br>
-                    💵 股價：${data.stock_price} 元${data.currency}<br>
-                    🕘 擷取時間：${data.time}
-                    `;
-                }else{
-                    resultDiv.innerHTML = `<span class = 'error'>查無此股票代號：${code}</span>`
-                }
+                // }    
+            }else{
+                resultDiv.innerHTML ='<span class="error">發生未知錯誤</span>'
             }
+        }
         </script>
     </body>
 </html>
