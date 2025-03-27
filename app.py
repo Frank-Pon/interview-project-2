@@ -14,6 +14,20 @@ def index():
 
 @app.route('/multi_check',methods = ['POST'])
 def multi_check():
+    '''
+    stock_list是前端傳回來的list of dict
+    回傳結果為：
+    
+    [
+    
+    {'stock_code':'2330','target':'1200'},
+    
+    {'stock_code':'00637L','target':'20'}
+
+    ] 
+
+    使用for 迴圈取出每支股票的代號與目標價，呼叫get_stock取得每支股票的詳細資訊
+    '''
     stock_list = request.get_json()
     result = []
 

@@ -2,7 +2,16 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
+
+
 def get_stock(stock_code):
+    '''
+    根據股票代號爬取Yahoo股市
+
+    參數stock_code為股票代號 ( 例:2330 )
+
+    回傳的dict包含股票名稱、股價等資訊
+    '''
     try:
         url = f'https://tw.stock.yahoo.com/quote/{stock_code}.TW'
         headers = {
